@@ -50,4 +50,7 @@ export default defineConfig({
     }),
   ],
   build: { outDir: "../docs" },
+  server: {
+    port: 7829,
+  },
 });
