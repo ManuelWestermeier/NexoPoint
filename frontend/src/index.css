@@ -1,0 +1,35 @@
+:root {
+    --nexo-primary: #0D1321;
+    /* Deep blue (background/header) */
+    --nexo-secondary: #1D2D44;
+    /* Medium dark blue (sidebar/nav) */
+    --nexo-accent: #3E5C76;
+    /* Accent (buttons/links) */
+    --nexo-highlight: #748CAB;
+    /* Light blue (hover/selected states) */
+    --nexo-background: #F7F9FB;
+    /* Light gray-blue background */
+    --nexo-text: #1A1A1A;
+    /* Dark text */
+    --nexo-text-light: #4F4F4F;
+    /* Subdued text */
+    --nexo-border: #E0E6ED;
+    /* Soft border */
+}
+
+body {
+    background-color: var(--nexo-background);
+    color: var(--nexo-text);
+}
+
+button {
+    background-color: var(--nexo-accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+}
+
+button:hover {
+    background-color: var(--nexo-highlight);
+}
