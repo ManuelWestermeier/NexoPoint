@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
 
 function DeviceList({ devices, onSelect }) {
   return (
@@ -58,13 +58,14 @@ export default function App() {
   const [devices, setDevices] = useState([]);
   const [connectedDevice, setConnectedDevice] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [bluetoothServer, setBluetoothServer] = useState(null);
+  const bluetoothServerRef = useRef(null);
+  const writeCharacteristicRef = useRef(null);
 
   const requestBluetoothDevices = async () => {
     try {
       const device = await navigator.bluetooth.requestDevice({
         acceptAllDevices: true,
-        optionalServices: ["battery_service"], // or your desired service
+        optionalServices: ["0000ffe0-0000-1000-8000-00805f9b34fb"],
       });
       setDevices([device]);
     } catch (error) {
@@ -75,26 +76,49 @@ export default function App() {
   const connectToDevice = async (device) => {
     try {
       const server = await device.gatt.connect();
+      bluetoothServerRef.current = server;
       setConnectedDevice(device);
-      setBluetoothServer(server);
-      // Add listener/handlers to receive messages here
+
+      const service = await server.getPrimaryService(
+        "0000ffe0-0000-1000-8000-00805f9b34fb"
+      );
+      const characteristic = await service.getCharacteristic(
+        "0000ffe1-0000-1000-8000-00805f9b34fb"
+      );
+      writeCharacteristicRef.current = characteristic;
+
+      await characteristic.startNotifications();
+      characteristic.addEventListener("characteristicvaluechanged", (event) => {
+        const value = new TextDecoder().decode(event.target.value);
+        setMessages((prev) => [...prev, value]);
+      });
     } catch (error) {
       console.error("Connection failed:", error);
     }
   };
 
-  const handleSendMessage = (message) => {
-    // Placeholder: implement sending via GATT characteristic
-    console.log("Sending message:", message);
+  const handleSendMessage = async (message) => {
+    try {
+      if (writeCharacteristicRef.current) {
+        const encoder = new TextEncoder();
+        await writeCharacteristicRef.current.writeValue(
+          encoder.encode(message + "\n")
+        );
+        setMessages((prev) => [...prev, "(You): " + message]);
+      }
+    } catch (error) {
+      console.error("Send failed:", error);
+    }
   };
-
-  useEffect(() => {
-    requestBluetoothDevices();
-  }, []);
 
   return (
     <div className="p-4 max-w-md mx-auto">
       <h1 className="text-xl font-bold mb-4">Bluetooth Messenger</h1>
+      {!connectedDevice && (
+        <button onClick={requestBluetoothDevices} className="mb-4">
+          Scan for Devices
+        </button>
+      )}
       {!connectedDevice && (
         <DeviceList devices={devices} onSelect={connectToDevice} />
       )}
