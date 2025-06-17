@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 
 function DeviceList({ devices, onSelect }) {
   return (
@@ -66,6 +66,7 @@ export default function App() {
       const device = await navigator.bluetooth.requestDevice({
         // acceptAllDevices: true,
         filters: [{ name: "NexoPoint" }],
+        optionalServices: ["00001234-0000-1000-8000-00805f9b34fb"],
       });
       setDevices([device]);
     } catch (error) {
@@ -80,10 +81,10 @@ export default function App() {
       setConnectedDevice(device);
 
       const service = await server.getPrimaryService(
-        "0000ffe0-0000-1000-8000-00805f9b34fb"
+        "00001234-0000-1000-8000-00805f9b34fb"
       );
       const characteristic = await service.getCharacteristic(
-        "0000ffe1-0000-1000-8000-00805f9b34fb"
+        "00001234-0000-1000-8000-00805f9b34fb"
       );
       writeCharacteristicRef.current = characteristic;
 
