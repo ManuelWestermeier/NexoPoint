@@ -64,8 +64,8 @@ export default function App() {
   const requestBluetoothDevices = async () => {
     try {
       const device = await navigator.bluetooth.requestDevice({
-        acceptAllDevices: true,
-        optionalServices: ["0000ffe0-0000-1000-8000-00805f9b34fb"],
+        // acceptAllDevices: true,
+        filters: [{ name: "NexoPoint" }],
       });
       setDevices([device]);
     } catch (error) {

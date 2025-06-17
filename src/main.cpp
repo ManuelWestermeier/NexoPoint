@@ -1,42 +1,22 @@
 #include <Arduino.h>
-#include "BluetoothSerial.h"
 
-// Ensure Bluetooth is enabled on ESP32
-#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-#error Bluetooth is not enabled! Please enable it in menuconfig
-#endif
-
-BluetoothSerial SerialBT;
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
 
 void setup()
 {
-  Serial.begin(115200);
-  SerialBT.begin("ESP32_Echo"); // Bluetooth device name
-  Serial.println("Bluetooth Echo App Started. Pair to 'ESP32_Echo'");
-
-  // Send hello message over Bluetooth
-  SerialBT.println("Hello from ESP32_Echo");
+  BLEDevice::init("NexoPoint");
+  BLEServer *pServer = BLEDevice::createServer();
+  BLEService *pService = pServer->createService("1234");
+  BLECharacteristic *pCharacteristic = pService->createCharacteristic(
+      "abcd",
+      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+  pCharacteristic->setValue("Hello");
+  pService->start();
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->start();
 }
 
-void loop()
-{
-  static String incoming = "";
-
-  while (SerialBT.available())
-  {
-    char c = SerialBT.read();
-    if (c == '\n')
-    {
-      Serial.print("Received: ");
-      Serial.println(incoming);
-      SerialBT.println("Echo: " + incoming);
-      incoming = ""; // Clear for next message
-    }
-    else if (c != '\r')
-    {
-      incoming += c;
-    }
-  }
-
-  delay(10); // Small delay to avoid busy loop
-}
+void loop() {}
